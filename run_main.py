@@ -10,4 +10,6 @@ sim.end()
 # check push
 
 #check push again
+
+# check push after restart
 print('Done')
