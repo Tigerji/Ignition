@@ -4,13 +4,15 @@ from datetime import datetime
 
 import numpy
 
+data_folder = 'Data'
 
-def spike_grid(num_source=10, num_spike=20, spike_interval=10, start_time=100, refractory=2):
+
+def spike_grid(num_source=10, num_spike=20, spike_interval=10, refractory=2, start_time=100):
     # grid spike train
     one_spike = []
     for i in range(num_spike):
         if spike_interval < refractory:
-            one_spike.append(one_train.append(start_time + i * refractory))
+            one_spike.append(one_spike.append(start_time + i * refractory))
         else:
             one_spike.append(start_time + i * spike_interval)
     return [one_spike for _ in range(num_source)]
@@ -413,7 +415,7 @@ def connector2matrix(connector, num_neuron=10):
 
 
 def matrix_save(matrix, data_file="matrixsave"):
-    with open((data_file + str(datetime.now()) + 'txt'), 'w+') as f:
+    with open((data_folder + '/' + data_file + str(datetime.now()) + '.txt'), 'w+') as f:
         for i in matrix:
             for j in i:
                 f.write(str(j))
@@ -421,7 +423,7 @@ def matrix_save(matrix, data_file="matrixsave"):
 
 
 def spike_save(spikes, data_file='spikesave'):
-    with open((data_file + str(datetime.now()) + 'txt'), 'w+') as f:
+    with open((data_folder + '/' + data_file + str(datetime.now()) + '.txt'), 'w+') as f:
         for i in range(len(spikes)):
             spike_number = []
             spike_timings = spikes[i]
@@ -458,3 +460,16 @@ def spike_load(data_file='spikefile.txt'):
             data.append(curr_line)
     return data
 
+
+def spike_binned(spike_data, sim_duration=1000):
+    # number of unique spikes in rolling window of 10 ms
+    binned_fired = [[] for _ in range(sim_duration)]
+    for i in range(len(spike_data)):
+        spike_timings = spike_data[i]
+        if len(spike_timings) > 1:
+            for j in spike_timings:
+                for k in range(-5, 5):
+                    log_binned = math.ceil(float(j) + k)
+                    if 0 < log_binned < sim_duration and i not in binned_fired[log_binned]:
+                        binned_fired[log_binned].append(i)
+    return [len(i) for i in binned_fired]

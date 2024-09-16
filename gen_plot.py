@@ -3,10 +3,10 @@ from datetime import datetime
 
 import matplotlib.pyplot as plt
 
-plotfolder = 'Plots/'
+plot_folder = 'Plots'
 
 
-def plot_spike_train(spike_train, plotname='spiketrain'):
+def plot_spike_train(spike_train, plot_name='spiketrain'):
     plt.figure()
     neuron_count = 1
     for i in spike_train:
@@ -20,34 +20,55 @@ def plot_spike_train(spike_train, plotname='spiketrain'):
     plt.title(str(len(spike_train)) +
               ' spiking sources with ' +
               str(len(spike_train[0])) + ' spikes')
-    plt.savefig(plotfolder + '/' + plotname + '_' + str(datetime.now()) + '.png')
-    plt.show()
+    plt.savefig(plot_folder + '/' + plot_name + '_' + str(datetime.now()) + '.png')
 
 
-def plot_conn_net(conn_net, title='demo', plotname='conn_net'):
+def plot_conn_net(conn_net, title='Connectivity Map', plot_name='conn_net'):
+    plt.figure()
     num_neuron = len(conn_net)
     for i in range(num_neuron):
         if conn_net[i]:
-            x = [i for j in conn_net[i]]
-            plt.plot(x, conn_net[i], 'b,')
+            for j in conn_net[i]:
+                plt.plot(i, j, 'b.')
     plt.xlim(0, num_neuron)
     plt.ylim(0, num_neuron)
+    plt.xlabel('Pre-synaptic neuron')
+    plt.ylabel('Target neuron')
     plt.title(title)
-    plt.savefig(plotfolder + '/' + plotname + '_' + str(datetime.now()) + '.png')
+    plt.savefig(plot_folder + '/' + plot_name + '_' + str(datetime.now()) + '.png')
 
 
-def plot_binned(spike_data, sim_duration=1000, plotname='spike_binned'):
+def plot_binned(spike_data, sim_duration=1000, plot_name='spike_binned'):
     # plot spike data in binned format
-    binned_fired = [[] for i in range(sim_duration)]
+    binned_fired = [[] for _ in range(sim_duration)]
     for i in range(len(spike_data)):
-        if spike_data[i]:
-            for j in spike_data[i]:
+        spike_timings = spike_data[i]
+        if len(spike_timings) > 1:
+            for j in spike_timings:
                 for k in range(-5, 5):
-                    log_binned = math.ceil(j + k)
+                    log_binned = math.ceil(float(j) + k)
                     if 0 < log_binned < sim_duration and i not in binned_fired[log_binned]:
                         binned_fired[log_binned].append(i)
     binned_count = [len(binned_fired[i]) for i in range(sim_duration)]
+    a = plt.figure()
     plt.plot(binned_count)
     plt.xlim(0, sim_duration)
-    plt.savefig(plotfolder + '/' + plotname + '_' + str(datetime.now()) + '.png')
+    plt.savefig(plot_folder + '/' + plot_name + '_' + str(datetime.now()) + '.png')
+    plt.close(a)
+    return binned_count
 
+
+def plot3d(spike_binned_data, weight_range=[10, 20], sim_duration=1000, plot_name='spike_3d'):
+    plt.minorticks_off()
+    ax = plt.axes(projection='3d')
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Weight')
+    ax.set_zlabel('Neuron Count')
+    xline = range(sim_duration)
+    count = 0
+    for i in range(weight_range[0], weight_range[1]):
+        yline = [i for _ in xline]
+        zline = spike_binned_data
+        count = count + 1
+    ax.plot3D(xline, yline, zline)
+#    plt.savefig(plot_folder + '/' + plot_name + '_' + str(datetime.now()) + '.png')
