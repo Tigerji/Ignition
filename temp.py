@@ -1,6 +1,3 @@
-a = list(range(9))
-b = []
-for i in range(2):
-    b.append(a.pop(0))
-print(a)
-print(b)
+a = [10,20]
+spike_count = [0 for _ in range(a[0], a[1])]
+print(spike_count)

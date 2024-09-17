@@ -5,24 +5,25 @@ from datetime import datetime
 import numpy
 
 data_folder = 'Data'
+plot_folder = 'Plots'
 
 
-def spike_grid(num_source=10, num_spike=20, spike_interval=10, refractory=2, start_time=100):
+def spike_train_grid(num_spike_source=10, spike_count=20, spike_interval=10, refractory=1, start_time=100):
     # grid spike train
     one_spike = []
-    for i in range(num_spike):
+    for i in range(spike_count):
         if spike_interval < refractory:
             one_spike.append(one_spike.append(start_time + i * refractory))
         else:
             one_spike.append(start_time + i * spike_interval)
-    return [one_spike for _ in range(num_source)]
+    return [one_spike for _ in range(num_spike_source)]
 
 
-def spike_poisson(num_source=10, num_spike=20, spike_interval=10, refractory=2, start_time=100):
+def spike_train_poisson(num_spike_source=10, spike_count=20, spike_interval=10, refractory=1, start_time=100):
     # each spike train is a poisson process
     spike_train = []
-    for _ in range(num_source):
-        poisson_count = numpy.random.poisson(lam=spike_interval, size=num_spike)
+    for _ in range(num_spike_source):
+        poisson_count = numpy.random.poisson(lam=spike_interval, size=spike_count)
         one_spike = []
         spike_time = start_time
         for i in poisson_count:
@@ -35,60 +36,90 @@ def spike_poisson(num_source=10, num_spike=20, spike_interval=10, refractory=2, 
     return spike_train
 
 
-def spike_random(num_source=10, num_spike=20, spike_interval=10, refractory=2, start_time=100):
+def spike_train_random(num_spike_source=10, spike_count=20, spike_interval=10, refractory=1, start_time=100):
     # spikes are random located in 2*spike_interval
     spike_train = []
-    for _ in range(num_source):
+    for _ in range(num_spike_source):
         one_spike = []
         current_time = start_time + random.randrange(spike_interval * 2)
         one_spike.append(current_time)
-        for j in range(num_spike - 1):
+        for j in range(spike_count - 1):
             current_time = current_time + random.randrange(refractory, spike_interval * 2)
             one_spike.append(current_time)
         spike_train.append(one_spike)
     return spike_train
 
 
-def spike_triangular(num_source=10, num_spike=20, spike_interval=10, refractory=2, start_time=100):
+def spike_train_triangular(num_spike_source=10, spike_count=20, spike_interval=10, refractory=1, start_time=100):
     # weight follows triangular linear distribution
     spike_train = []
-    peak_time = start_time + (num_spike - 1) * spike_interval / 2
-    spike_time = list(range(start_time, start_time + (num_spike - 1) * spike_interval + 1, refractory))
+    peak_time = start_time + (spike_count - 1) * spike_interval / 2
+    spike_time = list(range(start_time, start_time + (spike_count - 1) * spike_interval + 1, int(refractory)))
     spike_weight_count = [peak_time - start_time - abs(i - peak_time) for i in spike_time]
     spike_weight = [i / sum(spike_weight_count) for i in spike_weight_count]
-    for _ in range(num_source):
-        one_spike = numpy.random.choice(spike_time, size=num_spike, replace=False, p=spike_weight)
+    for _ in range(num_spike_source):
+        one_spike = numpy.random.choice(spike_time, size=spike_count, replace=False, p=spike_weight)
         spike_train.append(sorted(one_spike))
     return spike_train
 
 
-def spike_t_square(num_source=10, num_spike=20, spike_interval=10, refractory=2, start_time=100):
+def spike_train_square(num_spike_source=10, spike_count=20, spike_interval=10, refractory=1, start_time=100):
     # weight follows squares of triangular distribution
     spike_train = []
-    peak_time = start_time + (num_spike - 1) * spike_interval / 2
-    spike_time = list(range(start_time, start_time + (num_spike - 1) * spike_interval + 1, refractory))
+    peak_time = start_time + (spike_count - 1) * spike_interval / 2
+    spike_time = list(range(start_time, start_time + (spike_count - 1) * spike_interval + 1, int(refractory)))
     spike_weight_count = [(peak_time - start_time - abs(i - peak_time)) ** 2 for i in spike_time]
     spike_weight = [i / sum(spike_weight_count) for i in spike_weight_count]
-    for _ in range(num_source):
-        one_spike = numpy.random.choice(spike_time, size=num_spike, replace=False, p=spike_weight)
+    for _ in range(num_spike_source):
+        one_spike = numpy.random.choice(spike_time, size=spike_count, replace=False, p=spike_weight)
         spike_train.append(sorted(one_spike))
     return spike_train
 
 
-def spike_t_quadrad(num_source=10, num_spike=20, spike_interval=10, refractory=2, start_time=100):
+def spike_train_quadrad(num_spike_source=10, spike_count=20, spike_interval=10, refractory=1, start_time=100):
     # weight follows quadrads of triangular distribution
     spike_train = []
-    peak_time = start_time + (num_spike - 1) * spike_interval / 2
-    spike_time = list(range(start_time, start_time + (num_spike - 1) * spike_interval + 1, refractory))
+    peak_time = start_time + (spike_count - 1) * spike_interval / 2
+    spike_time = list(range(start_time, start_time + (spike_count - 1) * spike_interval + 1, int(refractory)))
     spike_weight_count = [(peak_time - start_time - abs(i - peak_time)) ** 4 for i in spike_time]
     spike_weight = [i / sum(spike_weight_count) for i in spike_weight_count]
-    for _ in range(num_source):
-        one_spike = numpy.random.choice(spike_time, size=num_spike, replace=False, p=spike_weight)
+    for _ in range(num_spike_source):
+        one_spike = numpy.random.choice(spike_time, size=spike_count, replace=False, p=spike_weight)
         spike_train.append(sorted(one_spike))
     return spike_train
 
 
-def conn_random(num_neuron=10, num_conn=4):
+def spike_train_normal(num_spike_source=10, spike_count=20, spike_interval=10, refractory=1, start_time=100):
+    # weight follows normal distribution
+    spike_train = []
+    for _ in range(num_spike_source):
+        one_spike = []
+        while len(one_spike) < spike_count:
+            new_spike = start_time + int(
+                random.normalvariate(spike_count * spike_interval / 2, spike_count * spike_interval / 6))
+            if new_spike not in one_spike:
+                one_spike.append(new_spike)
+        spike_train.append(sorted(one_spike))
+    return spike_train
+
+
+def conn_spike_neuron(num_spike=10, num_neuron=1000, num_conn=1):
+    # from spike source to neuron
+    # num_conn = 1: spike source connect to first num_spike neurons
+    # num_conn > 1: spike source has extra random connections to neurons
+    conn_net = [[] for _ in range(num_spike)]
+    for i in range(num_spike):
+        conn_net[i].append(i)
+        if num_conn > 1:
+            for j in range(num_conn - 1):
+                target_neurons = list(range(num_neuron))
+                target_neurons.remove(i)
+                random.shuffle(target_neurons)
+                conn_net[i] = conn_net[i] + target_neurons[0:num_conn - 1]
+    return conn_net
+
+
+def conn_neuron_random(num_neuron=10, num_conn=4):
     # random network
     conn_net = [[] for _ in range(num_neuron)]
     for i in range(num_neuron):

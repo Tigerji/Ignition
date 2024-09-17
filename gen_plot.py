@@ -6,21 +6,27 @@ import matplotlib.pyplot as plt
 plot_folder = 'Plots'
 
 
-def plot_spike_train(spike_train, plot_name='spiketrain'):
-    plt.figure()
+def plot_spike_train(spike_train, x_range=[50, 350], start_time=100, plot_name='spiketrain'):
+    #    plt.figure()
     neuron_count = 1
+    spike_count = [0 for _ in range(0, x_range[1])]
     for i in spike_train:
-        print(i)
         for j in i:
-            print(j, neuron_count)
             plt.plot(j, neuron_count, 'b.')
+            for s in range(j - 5, j + 5):
+                if s > 0 and s < x_range[1]:
+                    spike_count[s] = spike_count[s] + 1
         neuron_count = neuron_count + 1
+    plt.plot(spike_count, 'r-')
     plt.xlabel("Spike Timing")
     plt.ylabel("Neurons")
-    plt.title(str(len(spike_train)) +
-              ' spiking sources with ' +
-              str(len(spike_train[0])) + ' spikes')
-    plt.savefig(plot_folder + '/' + plot_name + '_' + str(datetime.now()) + '.png')
+    plt.xlim((x_range))
+
+
+#    plt.title(str(len(spike_train)) +
+#              ' spiking sources with ' +
+#              str(len(spike_train[0])) + ' spikes')
+#    plt.savefig(plot_folder + '/' + plot_name + '_' + str(datetime.now()) + '.png')
 
 
 def plot_conn_net(conn_net, title='Connectivity Map', plot_name='conn_net'):
