@@ -13,7 +13,7 @@ sim_duration = 3000
 # Connect spiking source to neurons
 num_spike = 10  # number of spike sources
 conn_spike = 1  # number of connections from spike to neuron
-spike_connected = 10  # number of neurons connected by spike source
+spike_connected = 1 # number of neurons connected by spike source
 weight_spike = 0.5  # weight from spike to neuron, at 50Hz minimum is 0.05
 delay_spike = 1.0  # unfied delays
 

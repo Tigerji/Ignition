@@ -3,29 +3,27 @@ from datetime import datetime
 
 import matplotlib.pyplot as plt
 
+import gen_net
+
 plot_folder = 'Plots'
 
 
-def plot_spike_train(spike_train, x_range=[50, 350], start_time=100, plot_name='spiketrain'):
-    #    plt.figure()
+def plot_spike_train(spike_train, x_range=None):
+    if x_range is None:
+        x_range = [50, 350]
     neuron_count = 1
     spike_count = [0 for _ in range(0, x_range[1])]
     for i in spike_train:
         for j in i:
             plt.plot(j, neuron_count, 'b.')
             for s in range(j - 5, j + 5):
-                if s > 0 and s < x_range[1]:
+                if 0 < s < x_range[1]:
                     spike_count[s] = spike_count[s] + 1
         neuron_count = neuron_count + 1
     plt.plot(spike_count, 'r-')
     plt.xlabel("Spike Timing")
     plt.ylabel("Neurons")
-    plt.xlim((x_range))
-
-
-#    plt.title(str(len(spike_train)) +
-#              ' spiking sources with ' +
-#              str(len(spike_train[0])) + ' spikes')
+    plt.xlim(x_range)
 #    plt.savefig(plot_folder + '/' + plot_name + '_' + str(datetime.now()) + '.png')
 
 
@@ -77,4 +75,56 @@ def plot3d(spike_binned_data, weight_range=[10, 20], sim_duration=1000, plot_nam
         zline = spike_binned_data
         count = count + 1
     ax.plot3D(xline, yline, zline)
+
+
 #    plt.savefig(plot_folder + '/' + plot_name + '_' + str(datetime.now()) + '.png')
+
+
+def plot_connectivity(spike_conn):
+    a = plt.figure()
+    for i in range(len(spike_conn)):
+        if len(spike_conn[i]) > 0:
+            for j in spike_conn[i]:
+                plt.plot(i, j, 'b,')
+    plt.title('Connectivity Map')
+    plt.xlabel('Pre-Synaptic Neuron')
+    plt.ylabel('Target Neurons')
+    plt.savefig((plot_folder + '/connectivity_' + str(datetime.now()) + '.png'))
+    plt.close(a)
+
+
+def plot_spike_demo(num_spike_source=10, spike_count=20, spike_interval=10, time_refrac=1.0):
+    plt.figure()
+    plt.subplot(3, 1, 1)
+    spike_times = spike_train_grid(num_spike_source, spike_count, spike_interval, time_refrac)
+    plot_spike_train(spike_times)
+    plt.title('Grid')
+
+    plt.subplot(3, 1, 2)
+    spike_times = gen_net.spike_train_poisson(num_spike_source, spike_count, spike_interval, time_refrac)
+    plot_spike_train(spike_times)
+    plt.title('Poisson')
+
+    plt.subplot(3, 1, 3)
+    spike_times = gen_net.spike_train_random(num_spike_source, spike_count, spike_interval, time_refrac)
+    plot_spike_train(spike_times)
+    plt.title('Random')
+    plt.tight_layout()
+
+    plt.figure()
+    plt.subplot(3, 1, 1)
+    spike_times = gen_net.spike_train_triangular(num_spike_source, spike_count, spike_interval, time_refrac)
+    plot_spike_train(spike_times)
+    plt.title('Triangular')
+
+    plt.subplot(3, 1, 2)
+    spike_times = gen_net.spike_train_square(num_spike_source, spike_count, spike_interval, time_refrac)
+    plot_spike_train(spike_times)
+    plt.title('Square')
+
+    plt.subplot(3, 1, 3)
+    spike_times = gen_net.spike_train_triangular(num_spike_source, spike_count, spike_interval, time_refrac)
+    plot_spike_train(spike_times)
+    plt.title('Normal')
+    plt.tight_layout()
+    plt.show()

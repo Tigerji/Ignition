@@ -3,6 +3,7 @@ import random
 from datetime import datetime
 
 import numpy
+import pyNN.nest as sim
 
 data_folder = 'Data'
 plot_folder = 'Plots'
@@ -23,7 +24,7 @@ def spike_train_poisson(num_spike_source=10, spike_count=20, spike_interval=10, 
     # each spike train is a poisson process
     spike_train = []
     for _ in range(num_spike_source):
-        poisson_count = numpy.random.poisson(lam=spike_interval, size=spike_count)
+        poisson_count = numpy.random.poisson(lam=int(spike_interval), size=int(spike_count))
         one_spike = []
         spike_time = start_time
         for i in poisson_count:
@@ -454,17 +455,18 @@ def matrix_save(matrix, data_file="matrixsave"):
 
 
 def spike_save(spikes, data_file='spikesave'):
+    """File name: spikesave"""
     with open((data_folder + '/' + data_file + str(datetime.now()) + '.txt'), 'w+') as f:
         for i in range(len(spikes)):
             spike_number = []
             spike_timings = spikes[i]
             if len(spike_timings) > 1:
                 for j in spike_timings:
-                    spike_number.append("%.1f" % float(j))
+                    spike_number.append('%.1f' % float(j))
             f.write(str(spike_number) + '\n')
 
-
 def matrix_load(data_file='matrixfile.txt'):
+    """Return data = [[]] """
     # load in matrix form from txt
     with open(data_file, 'r') as f:
         data = []
@@ -492,7 +494,7 @@ def spike_load(data_file='spikefile.txt'):
     return data
 
 
-def spike_binned(spike_data, sim_duration=1000):
+def spike_rolling_unique(spike_data, sim_duration=1000):
     # number of unique spikes in rolling window of 10 ms
     binned_fired = [[] for _ in range(sim_duration)]
     for i in range(len(spike_data)):
@@ -504,3 +506,49 @@ def spike_binned(spike_data, sim_duration=1000):
                     if 0 < log_binned < sim_duration and i not in binned_fired[log_binned]:
                         binned_fired[log_binned].append(i)
     return [len(i) for i in binned_fired]
+
+
+def spike_rolling_freq(spike_data, sim_duration=1000):
+    # spiking frequency in rolling window of 10 ms
+    rolling_spike = [0 for _ in range(sim_duration)]
+    for i in range(len(spike_data)):
+        spike_timings = spike_data[i]
+        if len(spike_timings) > 1:
+            for j in spike_timings:
+                for k in range(-5, 5):
+                    log_binned = math.ceil(float(j) + k)
+                    if 0 < log_binned < sim_duration:
+                        rolling_spike[log_binned] = rolling_spike[log_binned] + 1
+    return [i * 100 for i in rolling_spike]
+
+
+def run_spike_neuron(conn_matrix_spike, conn_matrix_neuron, spike_train, sim_duration):
+    """conn_matrix: [[[a,weight,delay],[b,weight,delay]],[]]"""
+    """return spike_rolling_unique: [], spike_data: [[]]"""
+    num_spike = len(conn_matrix_spike)
+    num_neuron = len(conn_matrix_neuron)
+
+    sim.setup(timestep=0.1)
+
+    spike_source = sim.Population(num_spike, sim.SpikeSourceArray(spike_times=spike_train))
+    neurons = sim.Population(num_neuron, sim.IF_cond_exp(tau_refrac=1.0))
+
+    conn_list = sim.FromListConnector(matrix2connector(conn_matrix_spike))
+    sim.Projection(spike_source, neurons, conn_list)
+
+    conn_list = sim.FromListConnector(matrix2connector(conn_matrix_neuron))
+    sim.Projection(neurons, neurons, conn_list)
+
+    neurons.record({'spikes'})
+    sim.run(sim_duration)
+    sim.end()
+
+    spike_data = neurons.get_data().segments[0].spiketrains
+
+    spike_data_float = [[] for _ in range(num_neuron)]
+    for current_neuron in range(num_neuron):
+        if len(spike_data[current_neuron]) > 0:
+            for current_spike in spike_data[current_neuron]:
+                spike_data_float[current_neuron].append(float(current_spike))
+    spike_save(spike_data_float)
+    return spike_rolling_unique(spike_data_float, sim_duration), spike_data_float
