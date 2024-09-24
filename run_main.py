@@ -22,7 +22,7 @@ weight_neuron_neuron = 0.001  # weight between neurons
 sim_duration = 3000
 weight_range = range(70, 90)
 
-for _ in range(10):
+for _ in range(1):
 
     plt.figure()
     ax = plt.axes(projection='3d')
