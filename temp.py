@@ -1,34 +1,40 @@
-import matplotlib.pyplot as plt
-import pyNN.nest as sim
+import random
 
-num_spike = 10
-num_neuron = 20
+sample_week = []
+weeks = 4
 
-sim.setup(timestep=0.1)
-spike_train = []
-for spike_timing in range(100, 200, 10):
-    spike_train.append(spike_timing)
+for _ in range(100):
+    reached = 0
+    gear_list = [593 for _ in range(16)]
+    for i in range(weeks):
+        loot1 = random.randint(0, 15)
+        if gear_list[loot1] < 616:
+            gear_list[loot1] = 616
+        else:
+            loot2 = random.randint(0, 15)
+            if gear_list[loot2] < 616:
+                gear_list[loot2] = 616
+        for _ in range(4):
+            loot = random.randint(0, 15)
+            if gear_list[loot] < 606:
+                gear_list[loot] = 606
+            if random.random() < 0.05:
+                loot = random.randint(0, 15)
+                if gear_list[loot] < 610:
+                    gear_list[loot] = 610
+    gear_list[gear_list.index(min(gear_list))] = 606
+    gear_list[gear_list.index(min(gear_list))] = 606
+    sample_week.append(sum(gear_list) / len(gear_list))
 
-spike_source = sim.Population(num_spike, sim.SpikeSourceArray(spike_times=spike_train))
-neurons = sim.Population(num_neuron, sim.IF_cond_exp(tau_refrac=1.0))
-neurons.record({'spikes'})
-syn = sim.StaticSynapse(weight=0.5, delay=1.0)
-sim.Projection(spike_source, neurons, sim.AllToAllConnector(), syn)
+sample_week = sorted(sample_week)
+print(sum(sample_week) / len(sample_week), min(sample_week), max(sample_week))
 
-sim.run(1000)
-sim.end()
+# 1st time loot + books: 44
+# 1st time gather: 24
+# mettle: 45
+# total: 113
+# weekly: 11 * 4
 
-spike_data = neurons.get_data().segments[0].spiketrains
-spike_data_float = [[] for _ in range(num_neuron)]
-for current_neuron in range(num_neuron):
-    if len(spike_data[current_neuron]) > 0:
-        for current_spike in spike_data[current_neuron]:
-            spike_data_float[current_neuron].append(float(current_spike))
 
-plt.figure()
-for i in range(num_neuron):
-    if spike_data_float[i]:
-        plt.plot(spike_data_float[i], [i for _ in spike_data_float[i]], 'b,')
-plt.xlabel('Time')
-plt.ylabel('Neurons')
-plt.show()
+# weekly chests opened
+# 84736,84737,84738,84739
