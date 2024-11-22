@@ -28,7 +28,7 @@ for current_neuron in range(num_neuron):
 plt.figure()
 for i in range(num_neuron):
     if spike_data_float[i]:
-        plt.plot(spike_data_float[i], [i for _ in spike_data_float[i]], 'b,')
+        plt.plot(spike_data_float[i], [i for _ in spike_data_float[i]], 'b.')
 plt.xlabel('Time')
 plt.ylabel('Neurons')
 plt.show()

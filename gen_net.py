@@ -3,7 +3,6 @@ import random
 from datetime import datetime
 
 import numpy
-import pyNN.nest as sim
 
 data_folder = 'Data'
 plot_folder = 'Plots'
@@ -465,6 +464,7 @@ def spike_save(spikes, data_file='spikesave'):
                     spike_number.append('%.1f' % float(j))
             f.write(str(spike_number) + '\n')
 
+
 def matrix_load(data_file='matrixfile.txt'):
     """Return data = [[]] """
     # load in matrix form from txt
@@ -525,6 +525,7 @@ def spike_rolling_freq(spike_data, sim_duration=1000):
 def run_spike_neuron(conn_matrix_spike, conn_matrix_neuron, spike_train, sim_duration):
     """conn_matrix: [[[a,weight,delay],[b,weight,delay]],[]]"""
     """return spike_rolling_unique: [], spike_data: [[]]"""
+    import pyNN.nest as sim
     num_spike = len(conn_matrix_spike)
     num_neuron = len(conn_matrix_neuron)
 
@@ -552,3 +553,19 @@ def run_spike_neuron(conn_matrix_spike, conn_matrix_neuron, spike_train, sim_dur
                 spike_data_float[current_neuron].append(float(current_spike))
     spike_save(spike_data_float)
     return spike_rolling_unique(spike_data_float, sim_duration), spike_data_float
+
+
+def is_strongly_connected(conn_net):
+    num_nodes = len(conn_net)
+    all_check = [False for _ in range(num_nodes)]
+    for i in range(num_nodes):
+        visited = [False for _ in range(num_nodes)]
+        checking = [i]
+        while checking:
+            u = checking.pop()
+            visited[u] = True
+            for j in conn_net[u]:
+                if not visited[j]:
+                    checking.append(j)
+        all_check[i] = all(visited)
+    return all(all_check)
